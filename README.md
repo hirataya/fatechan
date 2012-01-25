@@ -29,5 +29,5 @@ Licensed under the same terms as Ruby 1.9.3.
 FAQ
 ---
 
-Q. Why did you name this bot Fatechan?
+### Q. Why did you name this bot Fatechan?
 A. It is named after Fate Testarossa from Lyrical Nanoha series.
