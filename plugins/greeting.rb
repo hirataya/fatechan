@@ -13,8 +13,8 @@ class Fatechan::Plugin::Greeting
     if m.user.nick == bot.nick then
       m.channel.notice(
         config["message"] ||
-        "#{Fatechan::NAME} " +
-        "Version #{Fatechan::VERSION}; #{RUBY_DESCRIPTION}"
+        "#{Fatechan::NAME} #{Fatechan::VERSION} <#{Fatechan::URL}>; " +
+        "#{RUBY_DESCRIPTION}"
       )
     end
     @done = true
