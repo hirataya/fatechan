@@ -1,5 +1,5 @@
 irc:
-  nick: "yasu"
+  nick: "fatebot"
   user: "fate"
   realname: "Fate Testarossa (Fate-chan)"
   server: "irc.freenode.net"
@@ -16,8 +16,8 @@ plugin:
   include: "**/*.rb"
   exclude:
     - "test/**/*.rb"
-    - "aaa.rb"
-    - "bbb.rb"
+    - "nanoha.rb"
+    - "hayate.rb"
   option:
     Fatechan::Plugin::Time:
       zones:
