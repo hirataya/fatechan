@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 require "uri"
+require "stringio"
+require "zlib"
 require "open-uri"
 require "nokogiri"
 require "kconv"
@@ -50,7 +52,8 @@ class Fatechan::Plugin::GetURITitle
       encode(invalid: :replace, undef: :replace)
 
     doc = Nokogiri::HTML(content)
-    title = doc.xpath("//title").first.text
+    title = doc.xpath("//title").first
+    title = title.text if title
     title = nil if title =~ /^\s*$/
     title
   end
@@ -88,6 +91,13 @@ class Fatechan::Plugin::GetURITitle
       open(uri, "r:binary") do |f|
         title = nil
         content = f.read
+
+        # Quick fix for "Content-Encoding: gzip"
+        if f.content_encoding.find { |e| e =~ /^(?:x-)?gzip$/i } then
+          StringIO.open(content) do |sio|
+            content = Zlib::GzipReader.wrap(sio).read
+          end
+        end
 
         if f.content_type == "text/html" then
           title = get_html_title(content)
