@@ -9,6 +9,7 @@ Encoding.default_internal = "utf-8"
 class Fatechan
   VERSION = "0.1"
   NAME = "IRC bot Fate Testarossa (Fate-chan)"
+  URL = "https://github.com/hirataya/fatechan"
 
   @@default_config = {
     nick: (1..8).to_a.map { ("a".."z").to_a.sample }.join(""),
@@ -61,16 +62,16 @@ class Fatechan
 
     @conf = YAML.load_file(config_file)
 
-    plugin_classes = load_plugins(@conf["plugin"])
-    $stderr.puts "Plugin(s): #{plugin_classes}"
-
     if not @bot = Cinch::Bot.new then
       $stderr.puts "Could not initialize Cinch::Bot"
       exit 1
     end
 
-    @bot.config.plugins[:prefix] = nil
     @bot.loggers.level = (@conf["bot"]["log_level"] || :debug).to_sym
+
+    plugin_classes = load_plugins(@conf["plugin"])
+    @bot.loggers.info "Plugin(s) loaded: #{plugin_classes}"
+    @bot.config.plugins[:prefix] = nil
 
     @bot.configure do |bc|
       @@default_config.merge(@conf["irc"]).each_pair do |key, value|
