@@ -13,8 +13,21 @@ Requirements
 * [ImageSize](http://rubygems.org/gems/imagesize)
 * [TZInfo](http://tzinfo.rubyforge.org/)
 
+Usage
+-----
+
+```
+% ruby bot.rb -c config.yml
+```
+
 License
 -------
 
 Licensed under the same terms as Ruby 1.9.3.
 (2-clause BSD license, or Ruby's license)
+
+FAQ
+---
+
+Q. Why did you name this bot Fatechan?
+A. It is named after Fate Testarossa from Lyrical Nanoha series.
