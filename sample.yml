@@ -1,0 +1,27 @@
+irc:
+  nick: "yasu"
+  user: "fate"
+  realname: "Fate Testarossa (Fate-chan)"
+  server: "irc.freenode.net"
+  port: 6667
+  #password: ""
+  #messages_per_second: 1
+  encoding: "utf-8"
+  channels:
+    - "#fatechan"
+bot:
+  log_level: info
+plugin:
+  dir: "plugins"
+  include: "**/*.rb"
+  exclude:
+    - "test/**/*.rb"
+    - "aaa.rb"
+    - "bbb.rb"
+  option:
+    Fatechan::Plugin::Time:
+      zones:
+        - "Asia/Tokyo"
+        - "America/Los_Angeles"
+    Non::Existent::Namespace:
+      fatechan: "moemoe"
