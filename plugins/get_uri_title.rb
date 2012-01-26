@@ -81,6 +81,12 @@ class Fatechan::Plugin::GetURITitle
     title
   end
 
+  def gunzip(data)
+    StringIO.open(data) do |sio|
+      Zlib::GzipReader.wrap(sio).read
+    end
+  end
+
   public
 
   def listen(m)
@@ -94,16 +100,15 @@ class Fatechan::Plugin::GetURITitle
 
         # Quick fix for "Content-Encoding: gzip"
         if f.content_encoding.find { |e| e =~ /^(?:x-)?gzip$/i } then
-          StringIO.open(content) do |sio|
-            content = Zlib::GzipReader.wrap(sio).read
-          end
+          content = gunzip(content)
         end
 
-        if f.content_type == "text/html" then
+        case f.content_type.downcase
+        when "text/html"
           title = get_html_title(content)
-        elsif f.content_type == "text/plain" then
+        when "text/plain"
           title = get_text_title(content)
-        elsif f.content_type =~ %r{image/} then
+        when %r{image/}
           tutle = "#{f.content_type}; #{get_image_info(content)}"
         end
 
