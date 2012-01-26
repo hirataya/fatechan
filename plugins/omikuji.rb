@@ -11,6 +11,14 @@ class Fatechan::Plugin::Omikuji
   def listen(m)
     return if not m.command == "PRIVMSG"
     return if not m.message =~ /^(?:omikuji|おみくじ):?$/i
-    m.channel.notice "#{m.user.nick}: #{@@kuji.sample}"
+
+    time = Time.now
+    kuji = @@kuji[(
+      time.to_i +
+      time.utc_offset +
+      m.user.nick.unpack("C*").inject { |sum, x| sum + x }
+    )%@@kuji.size]
+
+    m.channel.notice "#{m.user.nick}: #{kuji}"
   end
 end
