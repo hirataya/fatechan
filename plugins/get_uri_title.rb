@@ -4,6 +4,7 @@ require "uri"
 require "stringio"
 require "zlib"
 require "open-uri"
+require "openssl"
 require "nokogiri"
 require "kconv"
 require "image_size"
@@ -76,15 +77,9 @@ class Fatechan::Plugin::GetURITitle
       title.strip!
       title.sub!(/[\0-\x1F\x7E].*/, "")
       title.gsub!(/\s{2,}/, " ")
-      title.sub!(/(.{50}).*/m) { "#{$1}..." }
+      title.sub!(/(.{#{config["max_title_length"]}}).*/m) { "#{$1}..." }
     end
     title
-  end
-
-  def gunzip(data)
-    StringIO.open(data) do |sio|
-      Zlib::GzipReader.wrap(sio).read
-    end
   end
 
   public
@@ -92,15 +87,24 @@ class Fatechan::Plugin::GetURITitle
   def listen(m)
     return if not m.command == "PRIVMSG"
     URI.extract(m.message, %w{http https}) do |uri|
+      #OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ca_file] = "/dev/null"
+
       uri = proc_fragment(URI(uri))
 
-      open(uri, "r:binary") do |f|
+      open(
+        uri,
+        "r:binary",
+        :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE,
+      ) do |f|
         title = nil
-        content = f.read
 
-        # Quick fix for "Content-Encoding: gzip"
-        if f.content_encoding.find { |e| e =~ /^(?:x-)?gzip$/i } then
-          content = gunzip(content)
+        case f.content_encoding.first
+        when /^(?:x-)?gzip$/i
+          content = Zlib::GzipReader.wrap(f).read
+        when /^(?:x-)?deflate$/i
+          content = Zlib::Inflate.inflate(f.read)
+        else
+          content = f.read
         end
 
         case f.content_type.downcase
