@@ -77,9 +77,37 @@ class Fatechan::Plugin::GetURITitle
       title.strip!
       title.sub!(/[\0-\x1F\x7F].*/, "")
       title.gsub!(/\s{2,}/, " ")
-      title.sub!(/(.{#{config["max_title_length"]}}).*/m) { "#{$1}..." }
+      title.sub!(/(.{#{config[:max_title_length] || 50}}).*/m) { "#{$1}..." }
     end
     title
+  end
+
+  def get_uri_title(uri, options)
+    begin
+      fp = open(uri, "r:binary", options)
+    rescue OpenURI::HTTPError => e
+      return "Error: #{e.message}"
+    end
+
+    case fp.content_encoding.first
+    when /^(?:x-)?gzip$/i
+      content = Zlib::GzipReader.wrap(fp).read
+    when /^(?:x-)?deflate$/i
+      content = Zlib::Inflate.inflate(fp.read)
+    else
+      content = fp.read
+    end
+
+    case fp.content_type.downcase
+    when "text/html"
+      title = get_html_title(content)
+    when "text/plain"
+      title = get_text_title(content)
+    when %r{image/}
+      title = "#{f.content_type}; #{get_image_info(content)}"
+    end
+
+    normalize_title(title) || fp.content_type || "Untitled"
   end
 
   public
@@ -89,35 +117,13 @@ class Fatechan::Plugin::GetURITitle
     URI.extract(m.message, %w{http https}) do |uri|
       uri = proc_fragment(URI(uri))
 
-      open(
-        uri,
-        "r:binary",
+      options = {
         :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE,
-      ) do |f|
-        title = nil
+      }.merge(config[:agent] || {})
 
-        case f.content_encoding.first
-        when /^(?:x-)?gzip$/i
-          content = Zlib::GzipReader.wrap(f).read
-        when /^(?:x-)?deflate$/i
-          content = Zlib::Inflate.inflate(f.read)
-        else
-          content = f.read
-        end
+      title = get_uri_title(uri, options)
 
-        case f.content_type.downcase
-        when "text/html"
-          title = get_html_title(content)
-        when "text/plain"
-          title = get_text_title(content)
-        when %r{image/}
-          tutle = "#{f.content_type}; #{get_image_info(content)}"
-        end
-
-        title = normalize_title(title) || f.content_type || "Untitled"
-
-        m.channel.notice "#{m.user.nick}: #{title}"
-      end
+      m.channel.notice "#{m.user.nick}: #{title}"
     end
   end
 end
