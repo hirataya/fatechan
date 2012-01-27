@@ -4,17 +4,15 @@ require "google_calc"
 
 class Fatechan::Plugin::Calc
   include Cinch::Plugin
-  listen_to :channel
+  set :reacting_on, :channel
+  match /^calc[\s:]\s*(.*)/
 
-  def listen(m)
+  def execute(m, expr)
     return if not m.command == "PRIVMSG"
-    if m.message =~ /^calc[\s:]\s*(.*)/ then
-      p $1
-      if result = GoogleCalc.calc($1) then
-        m.channel.notice "#{m.user.nick}: #{result}"
-      else
-        m.channel.notice "#{m.user.nick}: Error: Invalid expression."
-      end
+    if result = GoogleCalc.calc(expr) then
+      m.channel.notice "#{m.user.nick}: #{result}"
+    else
+      m.channel.notice "#{m.user.nick}: Error: Invalid expression."
     end
   end
 end

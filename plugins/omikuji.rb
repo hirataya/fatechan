@@ -2,15 +2,15 @@
 
 class Fatechan::Plugin::Omikuji
   include Cinch::Plugin
-  listen_to :channel
+  set :reacting_on, :channel
+  match /^(?:omikuji|おみくじ):?$/i
 
   @@kuji =
     ["大吉"] + ["中吉"]*2 + ["小吉"]*3 + ["吉"]*4 +
     ["末吉"]*3 + ["凶"]*2 + ["大凶"]
 
-  def listen(m)
+  def execute(m)
     return if not m.command == "PRIVMSG"
-    return if not m.message =~ /^(?:omikuji|おみくじ):?$/i
 
     time = Time.now
     kuji = @@kuji[(
