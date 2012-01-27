@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require "optparse"
+require "pp"
 require "yaml"
 require "cinch"
 require "util"
@@ -50,6 +51,25 @@ class Fatechan
     Util.get_classes.select { |c| c.include?(Cinch::Plugin) }
   end
 
+  def make_hash_keys_symbol(data)
+    if data.is_a?(Hash) then
+      newhash = {}
+      data.each_pair do |key, value|
+        if key =~ /^\+(.*)/ then
+          newhash[$1] = make_hash_keys_symbol(value)
+        else
+          newhash[key.to_sym] = make_hash_keys_symbol(value)
+        end
+      end
+      data = newhash
+    elsif data.is_a?(Array) then
+      data.each_with_index do |value, index|
+        data[index] = make_hash_keys_symbol(value)
+      end
+    end
+    data
+  end
+
   public
 
   def initialize
@@ -82,7 +102,9 @@ class Fatechan
 
       @conf["plugin"]["option"].each_pair do |key, value|
         if Util.get_classes.find { |c| c.to_s == key } then
+          value = make_hash_keys_symbol(value)
           bc.plugins.options[eval key] = value
+          @bot.loggers.debug "Config(#{key}) = #{value.pretty_inspect}"
         end
       end
     end

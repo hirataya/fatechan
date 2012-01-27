@@ -8,7 +8,7 @@ class Fatechan::Plugin::Time
   match /^(time|時刻|ちめ):?$/i
 
   def execute(m)
-    zones = config["zones"] || %w{Asia/Tokyo}
+    zones = config[:zones] || %w{Asia/Tokyo}
     return if not m.command == "PRIVMSG"
     utc = Time.now.gmtime
     time = zones.map { |a|
