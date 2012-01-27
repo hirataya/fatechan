@@ -75,7 +75,7 @@ class Fatechan::Plugin::GetURITitle
   def normalize_title(title)
     if title then
       title.strip!
-      title.sub!(/[\0-\x1F\x7E].*/, "")
+      title.sub!(/[\0-\x1F\x7F].*/, "")
       title.gsub!(/\s{2,}/, " ")
       title.sub!(/(.{#{config["max_title_length"]}}).*/m) { "#{$1}..." }
     end
@@ -87,8 +87,6 @@ class Fatechan::Plugin::GetURITitle
   def listen(m)
     return if not m.command == "PRIVMSG"
     URI.extract(m.message, %w{http https}) do |uri|
-      #OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ca_file] = "/dev/null"
-
       uri = proc_fragment(URI(uri))
 
       open(
