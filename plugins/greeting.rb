@@ -9,7 +9,7 @@ class Fatechan::Plugin::Greeting
     if m.user == bot then
       m.channel.notice(
         config["message"] ||
-        "#{Fatechan::NAME} #{Fatechan::VERSION} <#{Fatechan::URL}>; " +
+        "#{Fatechan::NAME}, Version #{Fatechan::VERSION} <#{Fatechan::URL}>; " +
         "#{RUBY_DESCRIPTION}"
       )
     end
