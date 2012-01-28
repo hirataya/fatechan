@@ -41,8 +41,8 @@ class Fatechan
 
   def load_plugins(pinfo)
     files =
-      expand(pinfo["dir"], pinfo["include"]) -
-      expand(pinfo["dir"], pinfo["exclude"])
+      expand(pinfo[:dir], pinfo[:include]) -
+      expand(pinfo[:dir], pinfo[:exclude])
 
     files.each do |file|
       require file
@@ -55,7 +55,7 @@ class Fatechan
     if data.is_a?(Hash) then
       newhash = {}
       data.each_pair do |key, value|
-        if key =~ /^\+(.*)/ then
+        if key.is_a?(String) and key =~ /^\+(.*)/ then
           newhash[$1] = make_hash_keys_symbol(value)
         else
           newhash[key.to_sym] = make_hash_keys_symbol(value)
@@ -80,30 +80,29 @@ class Fatechan
     end
     opt.parse!
 
-    @conf = YAML.load_file(config_file)
+    @conf = make_hash_keys_symbol(YAML.load_file(config_file))
 
     if not @bot = Cinch::Bot.new then
       $stderr.puts "Could not initialize Cinch::Bot"
       exit 1
     end
 
-    @bot.loggers.level = (@conf["bot"]["log_level"] || :debug).to_sym
+    @bot.loggers.level = (@conf[:bot][:log_level] || :debug).to_sym
 
-    plugin_classes = load_plugins(@conf["plugin"])
+    plugin_classes = load_plugins(@conf[:plugin])
     @bot.loggers.info "Plugin(s) loaded: #{plugin_classes}"
     @bot.config.plugins[:prefix] = nil
 
     @bot.configure do |bc|
-      @@default_config.merge(@conf["irc"]).each_pair do |key, value|
-        bc[key.to_sym] = value
+      @@default_config.merge(@conf[:irc]).each_pair do |key, value|
+        bc[key] = value
       end
 
       bc.plugins.plugins = plugin_classes
 
-      @conf["plugin"]["option"].each_pair do |key, value|
-        if Util.get_classes.find { |c| c.to_s == key } then
-          value = make_hash_keys_symbol(value)
-          bc.plugins.options[eval key] = value
+      @conf[:plugin][:option].each_pair do |key, value|
+        if Util.get_classes.find { |c| c.to_s == key.to_s } then
+          bc.plugins.options[eval key.to_s] = value
           @bot.loggers.debug "Config(#{key}) = #{value.pretty_inspect}"
         end
       end
