@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require "uri"
+require "cgi"
 require "stringio"
 require "zlib"
 require "open-uri"
@@ -17,7 +18,7 @@ class Fatechan::Plugin::GetURITitle
 
   def proc_fragment(uri)
     if uri.fragment =~ /^!(.*)/ then
-      query = "_escaped_fragment_=" + URI.escape($1)
+      query = "_escaped_fragment_=" + CGI.escape($1)
       if uri.query then
         uri.query += "&" + query
       else
